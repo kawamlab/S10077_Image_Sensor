@@ -51,7 +51,7 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-// Imageのピクセル数を定�??????
+// Imageのピクセル数を定�???????????????????
 #define NUM_PIXELS 1024
 // DMA受信バッファ
 uint16_t adc_buffer[NUM_PIXELS];
@@ -78,22 +78,22 @@ void print_image_data(void);
   * @retval None
   */
 void print_image_data(void) {
-    static char buf[10000];
+    static char buf[11000];
     int n = 0;
 
-    // フレームヘッ�??????�??????
+    // フレームヘッ�???????????????????�???????????????????
     n += snprintf(buf + n, sizeof(buf) - n, "BEGIN,");
 
     // 288個のデータ�??
     for (int i = 0; i < 1024; ++i) {
-    	// �??????後の値の後にもカンマを追加し、末尾でまとめてENDを追�??????
+    	// �???????????????????後の値の後にもカンマを追加し、末尾でまとめてENDを追�???????????????????
         n += snprintf(buf + n, sizeof(buf) - n, "%u,", adc_buffer[i]);
     }
 
-    // フレームフッター（Pythonのreadlineのために、必ず\r\nを付ける�??????
+    // フレームフッター（Pythonのreadlineのために、必ず\r\nを付ける�???????????????????
     n += snprintf(buf + n, sizeof(buf) - n, "END\r\n");
 
-    // �??????括で送信
+    // �???????????????????括で送信
     HAL_UART_Transmit(&huart2, (uint8_t*)buf, n, HAL_MAX_DELAY);
 }
 
@@ -107,10 +107,10 @@ void print_image_data(void) {
   */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	// 対象のADC1であるかを確�??????
+	// 対象のADC1であるかを確�???????????????????
   if(hadc->Instance == ADC1)
   {
-	  // ハードウェアが自動的�??????288回のサンプリングと転送を完了したので、メインループに通知するためのフラグを設定す�??????
+	  // ハードウェアが自動的�???????????????????288回のサンプリングと転送を完了したので、メインループに通知するためのフラグを設定す�???????????????????
     data_ready_flag = true;
   }
 }
@@ -155,29 +155,29 @@ int main(void)
   if (HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1) != HAL_OK) {
           Error_Handler();
       }
-  // 2. TRG信号の監視を開始
-  if (HAL_TIM_IC_Start(&htim3, TIM_CHANNEL_1) != HAL_OK) {
-          Error_Handler();
-      }
-  HAL_UART_Transmit(&huart2, (uint8_t*)"S10077 Image sensor Ready.\r\n", 49, HAL_MAX_DELAY);
+
+  HAL_UART_Transmit(&huart2, (uint8_t*)"S10077 Image sensor Ready.\n", 49, HAL_MAX_DELAY);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	// 3. スペクトル収集サイクルを1回トリガーす�??????
+	  //	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buffer, NUM_PIXELS);
+	  	if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buffer, NUM_PIXELS) != HAL_OK) {
+	  		Error_Handler();
+	  	}
+	// 3. スペクトル収集サイクルを1回トリガーす�???????????????????
 	HAL_GPIO_WritePin(ST_GPIO_Port, ST_Pin, GPIO_PIN_SET);
-	HAL_Delay(10); // 積分時間�??????10msに設定（必要に応じて調整可能�??????
+	HAL_Delay(10); // 積分時間�???????????????????10msに設定（必要に応じて調整可能�???????????????????
 	HAL_GPIO_WritePin(ST_GPIO_Port, ST_Pin, GPIO_PIN_RESET);
+	// 4. ADCとDMAを起動�?�ハードウェアは自動的にTIM3から転�?�されるTRG信号�???????????????????288回待機す�???????????????????
 
-	// 4. ADCとDMAを起動�?�ハードウェアは自動的にTIM3から転�?�されるTRG信号�??????288回待機す�??????
-	if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buffer, NUM_PIXELS) != HAL_OK) {
-		Error_Handler();
-	}
+
 
 	// 5. 収集完了を待機�?�この間、CPUは完全にアイドル状態
 	while (!data_ready_flag) {}
@@ -185,6 +185,7 @@ int main(void)
 
 	// 6. 収集完了後�?�データを処理して�?�信
     print_image_data();
+    HAL_Delay(15);
   }
   /* USER CODE END 3 */
 }
@@ -283,7 +284,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_28CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -317,7 +318,7 @@ static void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 0;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 180-1;
+  htim1.Init.Period = 360-1;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -341,7 +342,7 @@ static void MX_TIM1_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 90;
+  sConfigOC.Pulse = 180;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -503,13 +504,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(ST_GPIO_Port, ST_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(ST_GPIO_Port, ST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : ST_Pin */
   GPIO_InitStruct.Pin = ST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(ST_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : EOS_Pin */
