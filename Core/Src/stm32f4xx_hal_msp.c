@@ -104,10 +104,10 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
     /**ADC1 GPIO Configuration
     PA1     ------> ADC1_IN1
     */
-    GPIO_InitStruct.Pin = VIDEO_Pin;
+    GPIO_InitStruct.Pin = VIDEO0_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(VIDEO_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(VIDEO0_GPIO_Port, &GPIO_InitStruct);
 
     /* ADC1 DMA Init */
     /* ADC1 Init */
@@ -155,7 +155,7 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
     /**ADC1 GPIO Configuration
     PA1     ------> ADC1_IN1
     */
-    HAL_GPIO_DeInit(VIDEO_GPIO_Port, VIDEO_Pin);
+    HAL_GPIO_DeInit(VIDEO0_GPIO_Port, VIDEO0_Pin);
 
     /* ADC1 DMA DeInit */
     HAL_DMA_DeInit(hadc->DMA_Handle);
@@ -198,12 +198,12 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
     /**TIM3 GPIO Configuration
     PA6     ------> TIM3_CH1
     */
-    GPIO_InitStruct.Pin = TRG_Pin;
+    GPIO_InitStruct.Pin = TRG0_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
-    HAL_GPIO_Init(TRG_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(TRG0_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN TIM3_MspInit 1 */
 
@@ -268,7 +268,7 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
     /**TIM3 GPIO Configuration
     PA6     ------> TIM3_CH1
     */
-    HAL_GPIO_DeInit(TRG_GPIO_Port, TRG_Pin);
+    HAL_GPIO_DeInit(TRG0_GPIO_Port, TRG0_Pin);
 
   /* USER CODE BEGIN TIM3_MspDeInit 1 */
 

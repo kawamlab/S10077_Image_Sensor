@@ -1,77 +1,62 @@
-/*
- * s10077_driver.h
- *
- *  Created on: Oct 14, 2025
- *      Author: 91281
- */
-
 #ifndef INC_S10077_DRIVER_H_
 #define INC_S10077_DRIVER_H_
 
-#include "main.h" // For HAL types and configurations
+#include "main.h"
 #include <stdbool.h>
-
 
 //================================================================================
 // User-configurable Parameters
-// (JP) ユーザーが設定可能なパラメータ
 //================================================================================
-
-// Total number of pixels for the S10077 sensor.
-// (JP) S10077センサーの総ピクセル数。
 #define S10077_NUM_PIXELS           1024
-
-// Integration time in milliseconds. Adjust this value based on light intensity.
-// (JP) 積分時間（ミリ秒）。光の強度に応じてこの値を調整してください。
 #define S10077_INTEGRATION_TIME_MS  10
 
+//================================================================================
+// Sensor Configuration Structure
+//================================================================================
+/**
+ * @brief  Structure to hold all hardware-specific handles for a single sensor.
+ * An array of these structures will be defined in main.c to describe the system.
+ */
+typedef struct {
+    ADC_HandleTypeDef* adc_handle;         // Pointer to the ADC peripheral (e.g., &hadc1)
+    uint32_t           adc_channel;        // ADC channel for this sensor's AO (e.g., ADC_CHANNEL_1)
+
+    TIM_HandleTypeDef* trig_tim_handle;    // Pointer to the TIM peripheral used for TRIG (e.g., &htim3)
+    uint32_t           tim_trig_source;    // The specific TIM trigger source for TRIG (e.g., TIM_TS_TI1FP1 for CH1)
+
+    GPIO_TypeDef* st_port;            // GPIO port for the ST signal (e.g., ST1_GPIO_Port)
+    uint16_t           st_pin;             // GPIO pin for the ST signal (e.g., ST1_Pin)
+} S10077_SensorConfig;
 
 //================================================================================
 // Public Function Prototypes
-// (JP) 公開関数のプロトタイプ
 //================================================================================
 
 /**
- * @brief  Initializes the S10077 driver with necessary HAL handles.
- * This function MUST be called once before any other driver functions.
- * (JP) S10077ドライバを必要なHALハンドルで初期化します。
- * (JP) この関数は、他のドライバ関数を呼び出す前に一度だけ呼び出す必要があります。
- * @param  hadc: Pointer to the ADC handle. (JP) ADCハンドルへのポインタ。
- * @param  htim_clk: Pointer to the TIM handle generating the CLK signal. (JP) CLK信号を生成するTIMハンドルへのポインタ。
- * @param  st_port: GPIO port for the ST signal. (JP) ST信号用のGPIOポート。
- * @param  st_pin: GPIO pin for the ST signal. (JP) ST信号用のGPIOピン。
- * @retval None
+ * @brief  Initializes the S10077 driver system.
+ * @param  configs: Pointer to an array of S10077_SensorConfig structures.
+ * @param  num_sensors: The total number of sensors defined in the configs array.
+ * @param  htim_clk: Pointer to the TIM handle generating the shared CLK signal.
+ * @param  huart: Pointer to the UART handle for data transmission.
  */
-void S10077_Init(ADC_HandleTypeDef* hadc, TIM_HandleTypeDef* htim_clk, GPIO_TypeDef* st_port, uint16_t st_pin);
+void S10077_System_Init(const S10077_SensorConfig* configs, uint8_t num_sensors, TIM_HandleTypeDef* htim_clk, UART_HandleTypeDef* huart);
 
 /**
- * @brief  Starts a single acquisition cycle. This is a non-blocking function.
- * (JP) 1回の取得サイクルを開始します。これはノンブロッキング関数です。
- * @retval None
+ * @brief  Starts a single acquisition cycle for a specific sensor. This is non-blocking.
+ * @param  sensor_id: The index of the sensor to acquire from (0 to num_sensors - 1).
  */
-void S10077_StartAcquisition(void);
+void S10077_StartAcquisition(uint8_t sensor_id);
 
 /**
  * @brief  Checks if the data acquisition is complete.
- * (JP) データ取得が完了したかどうかを確認します。
- * @retval true if data is ready, false otherwise. (JP) データが準備できていればtrue、そうでなければfalse。
+ * @retval true if data is ready, false otherwise.
  */
 bool S10077_IsDataReady(void);
 
 /**
- * @brief  Gets a pointer to the internal data buffer.
- * Call this only after S10077_IsDataReady() returns true.
- * (JP) 内部データバッファへのポインタを取得します。
- * (JP) S10077_IsDataReady()がtrueを返した後にのみ呼び出してください。
- * @retval Pointer to the 16-bit pixel data array. (JP) 16ビットのピクセルデータ配列へのポインタ。
+ * @brief  Transmits the acquired data of the last-read sensor over UART.
+ * Format: "BEGIN,SENSOR_[ID],{data...},END\r\n"
  */
-uint16_t* S10077_GetData(void);
-
-/**
- * @brief  Gets the total number of pixels.
- * (JP) 総ピクセル数を取得します。
- * @retval Total number of pixels. (JP) 総ピクセル数。
- */
-uint32_t S10077_GetNumPixels(void);
+void S10077_PrintDataViaUART(void);
 
 #endif /* INC_S10077_DRIVER_H_ */

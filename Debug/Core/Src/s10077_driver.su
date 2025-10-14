@@ -1,0 +1,5 @@
+../Core/Src/s10077_driver.c:22:6:S10077_System_Init	24	static
+../Core/Src/s10077_driver.c:35:6:S10077_StartAcquisition	24	static
+../Core/Src/s10077_driver.c:61:6:S10077_IsDataReady	4	static
+../Core/Src/s10077_driver.c:66:6:S10077_PrintDataViaUART	16	static
+../Core/Src/s10077_driver.c:84:6:HAL_ADC_ConvCpltCallback	16	static

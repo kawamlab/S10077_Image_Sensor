@@ -21,9 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
+#include "s10077_driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,12 +49,44 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-// Imageのピクセル数を定�???????????????????
-#define NUM_PIXELS 1024
-// DMA受信バッファ
-uint16_t adc_buffer[NUM_PIXELS];
-// データ収集完了フラグ
-volatile bool data_ready_flag = false;
+
+// --- User Configuration ---
+#define SENSORS_IN_USE 1 // We are using only one sensor now.
+
+// Sensor Configuration Array
+const S10077_SensorConfig sensor_configs[SENSORS_IN_USE] = {
+    // Sensor 0 (handled by TIM3)
+	  {
+		.adc_handle      = &hadc1,
+		.adc_channel     = ADC_CHANNEL_1,
+		.trig_tim_handle = &htim3,
+		.tim_trig_source = TIM_TS_TI1FP1,
+		.st_port         = ST0_GPIO_Port,
+		.st_pin          = ST0_Pin
+	  },
+//    // Sensor 1 (handled by TIM3)
+//    {
+//      .adc_handle      = &hadc1,
+//      .trig_tim_handle = &htim3,
+//      .st_port         = ST1_GPIO_Port,
+//      .st_pin          = ST1_Pin
+//    },
+//    // Sensor 2 (handled by TIM2)
+//    {
+//      .adc_handle      = &hadc1,
+//      .trig_tim_handle = &htim2,
+//      .st_port         = ST2_GPIO_Port,
+//      .st_pin          = ST2_Pin
+//    },
+//    // Sensor 3 (handled by TIM2)
+//    {
+//      .adc_handle      = &hadc1,
+//      .trig_tim_handle = &htim2,
+//      .st_port         = ST3_GPIO_Port,
+//      .st_pin          = ST3_Pin
+//    }
+};
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -68,52 +98,10 @@ static void MX_TIM1_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-void print_image_data(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-/**
-  * @brief  UART経由でスペクトルデータを送信
-  * @retval None
-  */
-void print_image_data(void) {
-    static char buf[11000];
-    int n = 0;
-
-    // フレームヘッ�???????????????????�???????????????????
-    n += snprintf(buf + n, sizeof(buf) - n, "BEGIN,");
-
-    // 288個のデータ�??
-    for (int i = 0; i < 1024; ++i) {
-    	// �???????????????????後の値の後にもカンマを追加し、末尾でまとめてENDを追�???????????????????
-        n += snprintf(buf + n, sizeof(buf) - n, "%u,", adc_buffer[i]);
-    }
-
-    // フレームフッター（Pythonのreadlineのために、必ず\r\nを付ける�???????????????????
-    n += snprintf(buf + n, sizeof(buf) - n, "END\r\n");
-
-    // �???????????????????括で送信
-    HAL_UART_Transmit(&huart2, (uint8_t*)buf, n, HAL_MAX_DELAY);
-}
-
-
-
-/**
-  * @brief  ADC変換完了コールバック関数
-  * @note   DMAモードでは�?�この関数は指定された数のデータ転�?�がすべて完了した後に一度だけ呼び出される�??
-  * @param  hadc: ADCハンドル
-  * @retval None
-  */
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-{
-	// 対象のADC1であるかを確�???????????????????
-  if(hadc->Instance == ADC1)
-  {
-	  // ハードウェアが自動的�???????????????????288回のサンプリングと転送を完了したので、メインループに通知するためのフラグを設定す�???????????????????
-    data_ready_flag = true;
-  }
-}
 /* USER CODE END 0 */
 
 /**
@@ -151,12 +139,11 @@ int main(void)
   MX_TIM3_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  // 1. CLKクロック信号
-  if (HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1) != HAL_OK) {
-          Error_Handler();
-      }
+  // Initialize the S10077 driver system with all necessary handles and configurations.
+  // (JP) S10077ドライバシステムを�?�必要なすべてのハンドルと設定で初期化します�??
+  S10077_System_Init(sensor_configs, SENSORS_IN_USE, &htim1, &huart2);
+  HAL_UART_Transmit(&huart2, (uint8_t*)"Multi-Sensor System Ready.\n", 27, HAL_MAX_DELAY);
 
-  HAL_UART_Transmit(&huart2, (uint8_t*)"S10077 Image sensor Ready.\n", 49, HAL_MAX_DELAY);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -167,25 +154,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  //	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buffer, NUM_PIXELS);
-	  	if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buffer, NUM_PIXELS) != HAL_OK) {
-	  		Error_Handler();
-	  	}
-	// 3. スペクトル収集サイクルを1回トリガーす�???????????????????
-	HAL_GPIO_WritePin(ST_GPIO_Port, ST_Pin, GPIO_PIN_SET);
-	HAL_Delay(10); // 積分時間�???????????????????10msに設定（必要に応じて調整可能�???????????????????
-	HAL_GPIO_WritePin(ST_GPIO_Port, ST_Pin, GPIO_PIN_RESET);
-	// 4. ADCとDMAを起動�?�ハードウェアは自動的にTIM3から転�?�されるTRG信号�???????????????????288回待機す�???????????????????
-
-
-
-	// 5. 収集完了を待機�?�この間、CPUは完全にアイドル状態
-	while (!data_ready_flag) {}
-	data_ready_flag = false; // 次の収集のためにフラグをリセット
-
-	// 6. 収集完了後�?�データを処理して�?�信
-    print_image_data();
-    HAL_Delay(15);
+	for (int i = 0; i < SENSORS_IN_USE; i++)
+	{
+		S10077_StartAcquisition(i);
+		while (!S10077_IsDataReady()){}
+		S10077_PrintDataViaUART();
+		HAL_Delay(50);
+	}
   }
   /* USER CODE END 3 */
 }
@@ -504,14 +479,20 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(ST_GPIO_Port, ST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(ST0_GPIO_Port, ST0_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : ST_Pin */
-  GPIO_InitStruct.Pin = ST_Pin;
+  /*Configure GPIO pin : VIDEO0_Pin */
+  GPIO_InitStruct.Pin = VIDEO0_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(VIDEO0_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : ST0_Pin */
+  GPIO_InitStruct.Pin = ST0_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(ST_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(ST0_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : EOS_Pin */
   GPIO_InitStruct.Pin = EOS_Pin;

@@ -59,16 +59,16 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define VIDEO_Pin GPIO_PIN_1
-#define VIDEO_GPIO_Port GPIOA
+#define VIDEO0_Pin GPIO_PIN_1
+#define VIDEO0_GPIO_Port GPIOA
 #define USART_TX_Pin GPIO_PIN_2
 #define USART_TX_GPIO_Port GPIOA
 #define USART_RX_Pin GPIO_PIN_3
 #define USART_RX_GPIO_Port GPIOA
-#define TRG_Pin GPIO_PIN_6
-#define TRG_GPIO_Port GPIOA
-#define ST_Pin GPIO_PIN_10
-#define ST_GPIO_Port GPIOB
+#define TRG0_Pin GPIO_PIN_6
+#define TRG0_GPIO_Port GPIOA
+#define ST0_Pin GPIO_PIN_10
+#define ST0_GPIO_Port GPIOB
 #define CLK_Pin GPIO_PIN_8
 #define CLK_GPIO_Port GPIOA
 #define EOS_Pin GPIO_PIN_10
