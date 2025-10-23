@@ -61,16 +61,14 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define ST2_Pin GPIO_PIN_0
 #define ST2_GPIO_Port GPIOC
-#define VIDEO1_Pin GPIO_PIN_0
-#define VIDEO1_GPIO_Port GPIOA
-#define VIDEO0_Pin GPIO_PIN_1
+#define VIDEO0_Pin GPIO_PIN_0
 #define VIDEO0_GPIO_Port GPIOA
+#define VIDEO1_Pin GPIO_PIN_1
+#define VIDEO1_GPIO_Port GPIOA
 #define USART_TX_Pin GPIO_PIN_2
 #define USART_TX_GPIO_Port GPIOA
 #define USART_RX_Pin GPIO_PIN_3
 #define USART_RX_GPIO_Port GPIOA
-#define VIDEO2_Pin GPIO_PIN_4
-#define VIDEO2_GPIO_Port GPIOA
 #define TRG1_Pin GPIO_PIN_5
 #define TRG1_GPIO_Port GPIOA
 #define TRG0_Pin GPIO_PIN_6
@@ -79,8 +77,6 @@ void Error_Handler(void);
 #define ST1_GPIO_Port GPIOB
 #define ST0_Pin GPIO_PIN_10
 #define ST0_GPIO_Port GPIOB
-#define TRG2_Pin GPIO_PIN_6
-#define TRG2_GPIO_Port GPIOC
 #define CLK_Pin GPIO_PIN_8
 #define CLK_GPIO_Port GPIOA
 #define TMS_Pin GPIO_PIN_13
