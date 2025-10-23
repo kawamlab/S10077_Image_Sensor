@@ -19,10 +19,7 @@
  */
 typedef struct {
     ADC_HandleTypeDef* adc_handle;         // Pointer to the ADC peripheral (e.g., &hadc1)
-    uint32_t           adc_channel;        // ADC channel for this sensor's AO (e.g., ADC_CHANNEL_1)
-
     TIM_HandleTypeDef* trig_tim_handle;    // Pointer to the TIM peripheral used for TRIG (e.g., &htim3)
-    uint32_t           tim_trig_source;    // The specific TIM trigger source for TRIG (e.g., TIM_TS_TI1FP1 for CH1)
 
     GPIO_TypeDef* st_port;            // GPIO port for the ST signal (e.g., ST1_GPIO_Port)
     uint16_t           st_pin;             // GPIO pin for the ST signal (e.g., ST1_Pin)

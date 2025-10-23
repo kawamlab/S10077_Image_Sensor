@@ -40,7 +40,6 @@ void S10077_StartAcquisition(uint8_t sensor_id)
 
     current_sensor_id = sensor_id;
     const S10077_SensorConfig* config = &sensor_configs[sensor_id];
-
     // Store the handle of the ADC we are about to use. This is crucial for the callback.
     current_adc_handle = config->adc_handle;
     data_ready_flag = false;
