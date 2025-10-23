@@ -61,14 +61,16 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define ST2_Pin GPIO_PIN_0
 #define ST2_GPIO_Port GPIOC
-#define VIDEO2_Pin GPIO_PIN_0
-#define VIDEO2_GPIO_Port GPIOA
+#define VIDEO1_Pin GPIO_PIN_0
+#define VIDEO1_GPIO_Port GPIOA
 #define VIDEO0_Pin GPIO_PIN_1
 #define VIDEO0_GPIO_Port GPIOA
 #define USART_TX_Pin GPIO_PIN_2
 #define USART_TX_GPIO_Port GPIOA
 #define USART_RX_Pin GPIO_PIN_3
 #define USART_RX_GPIO_Port GPIOA
+#define VIDEO2_Pin GPIO_PIN_4
+#define VIDEO2_GPIO_Port GPIOA
 #define TRG1_Pin GPIO_PIN_5
 #define TRG1_GPIO_Port GPIOA
 #define TRG0_Pin GPIO_PIN_6
